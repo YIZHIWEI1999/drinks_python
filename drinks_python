@@ -1,0 +1,42 @@
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+# 假设的饮料数据
+drinks = [
+    {'name': 'Coca-Cola', 'description': 'Carbonated soft drink'},
+    {'name': 'Pepsi', 'description': 'Carbonated soft drink'},
+]
+
+# 获取饮料列表
+@app.route('/drinks', methods=['GET'])
+def get_drinks():
+    return jsonify({'drinks': drinks})
+
+# 添加新饮料
+@app.route('/drinks', methods=['POST'])
+def add_drink():
+    new_drink = request.get_json()
+    drinks.append(new_drink)
+    return jsonify({'drinks': drinks}), 201
+
+# 更新饮料信息
+@app.route('/drinks/<string:name>', methods=['PUT'])
+def update_drink(name):
+    drink = next((drink for drink in drinks if drink['name'] == name), None)
+    if not drink:
+        return jsonify({'message': 'Drink not found'}), 404
+
+    drink_update = request.get_json()
+    drink.update(drink_update)
+    return jsonify({'drink': drink})
+
+# 删除饮料
+@app.route('/drinks/<string:name>', methods=['DELETE'])
+def delete_drink(name):
+    global drinks
+    drinks = [drink for drink in drinks if drink['name'] != name]
+    return jsonify({'message': 'Drink deleted'}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
